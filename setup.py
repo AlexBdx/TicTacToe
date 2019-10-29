@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="TicTacToe",
-    version="0.0.2",
+    version="0.0.3",
     author="Alex Bondoux",
     author_email="alexandre.bdx@gmail.com",
     description="A Reinforcement Learning approach to the general TicTacToe games ",
