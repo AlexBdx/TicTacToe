@@ -3,19 +3,19 @@ import pickle
 
 
 class Player:
-    def __init__(self, name, player_id, pc, max_l, exp_rate=0.3):
+    def __init__(self, name, player_id, pc, max_l, lr_schedule=(0.2, (500, 1500), 0.2), explo_schedule=(0.3, (1000, 45000), 0)):
         self.name = name
         self.states = []  # record all positions taken
-        self.lr_scheduler = {
-            'start': 0.2,
-            'decreasing': (500, 1500),
-            'end': 0.2
+        self.lr_schedule = {
+            'start': lr_schedule[0],
+            'decreasing': lr_schedule[1],
+            'end': lr_schedule[2]
         }
         #self.exp_rate = exp_rate  # Exploration rate
-        self.explo_scheduler = {
-            'start': 0.3,
-            'decreasing': (1000, 45000),
-            'end': 0
+        self.explo_schedule = {
+            'start': explo_schedule[0],
+            'decreasing': explo_schedule[1],
+            'end': explo_schedule[2]
         }
         self.decay_gamma = 0.9  # Discount rate
         self.states_value = {}  # state -> value
@@ -27,35 +27,35 @@ class Player:
         # Sanity checks - make sure the schedulers have con
     def test_learningRate(self):
         # TO DO: Test 4 points: start, first inflexion, second inflexion, end
-        assert learningRate(self, self.lr_scheduler['decreasing'][0]) == self.lr_scheduler['start']
-        assert learningRate(self, self.lr_scheduler['decreasing'][0]) == self.lr_scheduler['start']
-        assert learningRate(self, self.lr_scheduler['decreasing'][1]) == self.lr_scheduler['end']
-        assert learningRate(self, self.lr_scheduler['decreasing'][0]) == self.lr_scheduler['end']
+        assert learningRate(self, self.lr_schedule['decreasing'][0]) == self.lr_schedule['start']
+        assert learningRate(self, self.lr_schedule['decreasing'][0]) == self.lr_schedule['start']
+        assert learningRate(self, self.lr_schedule['decreasing'][1]) == self.lr_schedule['end']
+        assert learningRate(self, self.lr_schedule['decreasing'][0]) == self.lr_schedule['end']
     
     def test_explorationRate(self):
-        assert explorationRate(self, self.explo_scheduler['decreasing'][0]) == self.explo_scheduler['start']
-        assert explorationRate(self, self.explo_scheduler['decreasing'][1]) == self.explo_scheduler['end']
+        assert explorationRate(self, self.explo_schedule['decreasing'][0]) == self.explo_schedule['start']
+        assert explorationRate(self, self.explo_schedule['decreasing'][1]) == self.explo_schedule['end']
         
         
     def learningRate(self, iteration):
-        if iteration < self.lr_scheduler['decreasing'][0]:
-            return self.lr_scheduler['start']
-        elif self.lr_scheduler['decreasing'][0] <= iteration < self.lr_scheduler['decreasing'][1]:
-            offset = self.lr_scheduler['decreasing'][0]
-            span = self.lr_scheduler['decreasing'][1] - self.lr_scheduler['decreasing'][0]
-            return self.lr_scheduler['start']-(self.lr_scheduler['start']-self.lr_scheduler['end'])*(iteration-offset)/span
+        if iteration < self.lr_schedule['decreasing'][0]:
+            return self.lr_schedule['start']
+        elif self.lr_schedule['decreasing'][0] <= iteration < self.lr_schedule['decreasing'][1]:
+            offset = self.lr_schedule['decreasing'][0]
+            span = self.lr_schedule['decreasing'][1] - self.lr_schedule['decreasing'][0]
+            return self.lr_schedule['start']-(self.lr_schedule['start']-self.lr_schedule['end'])*(iteration-offset)/span
         else:
-            return self.lr_scheduler['end']
+            return self.lr_schedule['end']
     
     def explorationRate(self, iteration):
-        if iteration < self.explo_scheduler['decreasing'][0]:
-            return self.explo_scheduler['start']
-        elif self.explo_scheduler['decreasing'][0] <= iteration < self.explo_scheduler['decreasing'][1]:
-            offset = self.explo_scheduler['decreasing'][0]
-            span = self.explo_scheduler['decreasing'][1] - self.explo_scheduler['decreasing'][0]
-            return self.explo_scheduler['start']-(self.explo_scheduler['start']-self.explo_scheduler['end'])*(iteration-offset)/span
+        if iteration < self.explo_schedule['decreasing'][0]:
+            return self.explo_schedule['start']
+        elif self.explo_schedule['decreasing'][0] <= iteration < self.explo_schedule['decreasing'][1]:
+            offset = self.explo_schedule['decreasing'][0]
+            span = self.explo_schedule['decreasing'][1] - self.explo_schedule['decreasing'][0]
+            return self.explo_schedule['start']-(self.explo_schedule['start']-self.explo_schedule['end'])*(iteration-offset)/span
         else:
-            return self.explo_scheduler['end']
+            return self.explo_schedule['end']
     
     
     def getHash(self, board, method='tostring'):
